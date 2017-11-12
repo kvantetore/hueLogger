@@ -6,7 +6,7 @@ import (
 	"fmt"
 	
 	"github.com/influxdata/influxdb/client/v2"
-	"github.com/stefanwichmann/go.hue"
+	"github.com/kvantetore/go.hue"
 )
 
 type InfluxSettings struct {
@@ -15,8 +15,20 @@ type InfluxSettings struct {
 	measurementName string
 }
 
+func findRoom(rooms []*hue.Group, light *hue.Light) (*hue.Group, error) {
+	for _, room := range rooms {
+		for _, lightIndex := range room.Lights {
+			if light.Id == lightIndex {
+				return room, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("No room found for light %v (%v)", light.Id, light.Name)
+}
+
  //StoreSensorData saves the current state of the sensors to an influxdb measurement
-func StoreSensorData(settings InfluxSettings, lights []*hue.Light) error {
+func StoreSensorData(settings InfluxSettings, lights []*hue.Light, rooms []*hue.Group) error {
 	//create influx client
 	cli, err := client.NewHTTPClient(client.HTTPConfig {
 		Addr: settings.serverURL,
@@ -38,16 +50,22 @@ func StoreSensorData(settings InfluxSettings, lights []*hue.Light) error {
 	//create points
 	currentTime := time.Now();
 	for _, light := range lights {
+		room, err := findRoom(rooms, light)
+		if err != nil {
+			return err
+		}
+
 		lightAttributes, err := light.GetLightAttributes()
 		if err != nil {
 			return fmt.Errorf("Error getting light attributes for light %v, %v", light.Name, err)
 		}
 
-
 		// Create a point and add to batch
 		tags := map[string]string{
 			"light_name": light.Name,
 			"light_id": light.Id,
+			"room_name": room.Name,
+			"room_id": room.Id,
 		}
 		if (lightAttributes.State.ColorMode != "") {
 			tags["color_mode"] = lightAttributes.State.ColorMode

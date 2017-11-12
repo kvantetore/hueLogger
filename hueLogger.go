@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"bufio"
 	"time"
-	"github.com/stefanwichmann/go.hue"
+	"github.com/kvantetore/go.hue"
 )
 
 const (
@@ -42,7 +42,6 @@ func connectToBridge() (bridge *hue.Bridge, err error) {
 	fmt.Println("Connected to bridge, please set environment variable HUE_USERNAME to ", bridge.Username)
 	return bridge, nil
 }
-
  
 func main() {
 	bridge, err := connectToBridge()
@@ -58,13 +57,19 @@ func main() {
 	}	
 	
 	performMeasurement := func() {
+		rooms, err := bridge.GetAllRooms()
+		if err != nil {
+			fmt.Printf("Error fetching rooms: %v\n", err)
+			return
+		}
+
 		lights, err := bridge.GetAllLights()
 		if err != nil {
 			fmt.Printf("Error fetching lights, %v\n", err)
 			return
 		}
 
-		err = StoreSensorData(influxSettings, lights)	
+		err = StoreSensorData(influxSettings, lights, rooms)	
 		if err != nil {
 			fmt.Printf("Error light data %v\n", err)
 		}
