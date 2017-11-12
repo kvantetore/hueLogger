@@ -57,6 +57,8 @@ func main() {
 	}	
 	
 	performMeasurement := func() {
+		fmt.Printf("%v: ", time.Now())
+
 		rooms, err := bridge.GetAllRooms()
 		if err != nil {
 			fmt.Printf("Error fetching rooms: %v\n", err)

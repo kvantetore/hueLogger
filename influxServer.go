@@ -2,6 +2,7 @@
 package main
 
 import (
+	"strconv"
 	"time"
 	"fmt"
 	
@@ -63,17 +64,38 @@ func StoreSensorData(settings InfluxSettings, lights []*hue.Light, rooms []*hue.
 		// Create a point and add to batch
 		tags := map[string]string{
 			"light_name": light.Name,
-			"light_id": light.Id,
 			"room_name": room.Name,
-			"room_id": room.Id,
 		}
+
+		//tag by color name
 		if (lightAttributes.State.ColorMode != "") {
 			tags["color_mode"] = lightAttributes.State.ColorMode
 		} else {
 			tags["color_mode"] = "white"
 		}
+		
+		//tag by state
+		if lightAttributes.State.On {
+			tags["state"] = "on"
+		} else {
+			tags["state"] = "off"
+		}
+
+		//parse light and room ids as numbers. This allows us to use the ids as field
+		//values, which in turn allows us to create queries like "select distinct(light_id) ..."
+		lightIdInt, err := strconv.ParseInt(light.Id, 10, 8)
+		if err != nil {
+			return fmt.Errorf("Unable to parse light id '%v' as int, %v", light.Id, err)
+		}
+
+		roomIdInt, err := strconv.ParseInt(room.Id, 10, 8)
+		if err != nil {
+			return fmt.Errorf("Unable to parse room id '%v' as int, %v", room.Id, err)
+		}
 
 		fields := map[string]interface{}{
+			"light_id": lightIdInt,
+			"room_id": roomIdInt,
 		}
 
 		if lightAttributes.State.Reachable {
@@ -101,6 +123,7 @@ func StoreSensorData(settings InfluxSettings, lights []*hue.Light, rooms []*hue.
 				}
 			}
 		} else {
+			fmt.Printf("Light %v is unreachable\n", light.Name)
 			fields["state"] = 0
 		}
 
