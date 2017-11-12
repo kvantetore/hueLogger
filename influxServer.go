@@ -75,7 +75,9 @@ func StoreSensorData(settings InfluxSettings, lights []*hue.Light, rooms []*hue.
 		}
 		
 		//tag by state
-		if lightAttributes.State.On {
+		if lightAttributes.State.Reachable {
+			tags["state"] = "unreachable"
+		} else if lightAttributes.State.On {
 			tags["state"] = "on"
 		} else {
 			tags["state"] = "off"
@@ -101,10 +103,7 @@ func StoreSensorData(settings InfluxSettings, lights []*hue.Light, rooms []*hue.
 		if lightAttributes.State.Reachable {
 			//state and brightness
 			if lightAttributes.State.On {
-				fields["state"] = 1
 				fields["brightness"] = lightAttributes.State.Bri
-			} else {
-				fields["state"] = 0
 			}
 
 			//color temperature
