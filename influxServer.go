@@ -75,7 +75,7 @@ func StoreSensorData(settings InfluxSettings, lights []*hue.Light, rooms []*hue.
 		}
 		
 		//tag by state
-		if lightAttributes.State.Reachable {
+		if !lightAttributes.State.Reachable {
 			tags["state"] = "unreachable"
 		} else if lightAttributes.State.On {
 			tags["state"] = "on"
