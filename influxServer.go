@@ -121,9 +121,6 @@ func StoreSensorData(settings InfluxSettings, lights []*hue.Light, rooms []*hue.
 					fields["color_y"] = lightAttributes.State.Xy[1]
 				}
 			}
-		} else {
-			fmt.Printf("Light %v is unreachable\n", light.Name)
-			fields["state"] = 0
 		}
 
 		pt, err := client.NewPoint(settings.measurementName, tags, fields, currentTime)
