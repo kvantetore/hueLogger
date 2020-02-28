@@ -6,12 +6,14 @@ import (
 	"time"
 	"fmt"
 	
-	"github.com/influxdata/influxdb/client/v2"
+	"github.com/influxdata/influxdb1-client/v2"
 	"github.com/kvantetore/go.hue"
 )
 
 type InfluxSettings struct {
 	serverURL string
+	username string
+	password string
 	dbName string
 	measurementName string
 }
@@ -33,6 +35,8 @@ func StoreSensorData(settings InfluxSettings, lights []*hue.Light, rooms []*hue.
 	//create influx client
 	cli, err := client.NewHTTPClient(client.HTTPConfig {
 		Addr: settings.serverURL,
+		Username: settings.username,
+		Password: settings.password,
 	})
 	if err != nil {
 		return fmt.Errorf("Failed to create HTTP Client, %v", err)

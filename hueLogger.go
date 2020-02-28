@@ -51,9 +51,11 @@ func main() {
 	}
 
 	influxSettings := InfluxSettings {
-		serverURL: influxServer,
-		dbName: influxDb,
-		measurementName: lightMeasurement,
+		serverURL: os.Getenv("INFLUX_URL"),
+		dbName: os.Getenv("INFLUX_DB"),
+		measurementName: os.Getenv("INFLUX_MEASUREMENT"),
+		username: os.Getenv("INFLUX_USERNAME"),
+		password: os.Getenv("INFLUX_PASSWORD"),
 	}	
 	
 	performMeasurement := func() {
